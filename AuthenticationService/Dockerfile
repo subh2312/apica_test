@@ -6,9 +6,9 @@ COPY pom.xml .
 RUN mvn clean install -DskipTests
 
 # Stage 2:Run the application
-FROM openjdk:17-alpine
+FROM openjdk:17
 WORKDIR /app
 COPY --from=build /app/target/apica-auth-micro.jar ./apica-auth-micro.jar
 EXPOSE 8082
-CMD ["java", "-jar", "auth-micro.jar"]
+CMD ["java", "-jar", "apica-auth-micro.jar"]
 

@@ -6,7 +6,7 @@ COPY pom.xml .
 RUN mvn clean install -DskipTests
 
 # Stage 2:Run the application
-FROM openjdk:17-alpine
+FROM openjdk:17
 WORKDIR /app
 COPY --from=build /app/target/apica-service-registry.jar ./apica-service-registry.jar
 EXPOSE 8081
