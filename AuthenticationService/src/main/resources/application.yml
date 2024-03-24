@@ -1,0 +1,18 @@
+jwt:
+  secret: "902ffc52f4ab670361e543008a5f8e86005edadfbc1df36f5cc375b433448aff"
+  expirationMs: 86400000
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8081/eureka/
+spring:
+  application:
+    name: AuthenticationService
+
+server:
+  port: 8082

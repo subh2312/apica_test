@@ -1,0 +1,13 @@
+package org.subhankar.apicagateway;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class ApicaGatewayApplicationTests {
+
+    @Test
+    void contextLoads() {
+    }
+
+}
