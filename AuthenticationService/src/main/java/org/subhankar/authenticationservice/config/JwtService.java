@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 @Component
@@ -70,5 +71,14 @@ public class JwtService {
     private Key getSignKey() {
         byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public String getUserIdFromJWT(String token) {
+        return extractClaim(token, claims -> claims.get("id", String.class));
+    }
+
+    public String getRoleFromJWT(String token) {
+         return extractClaim(token, claims -> claims.get("role", String.class));
+
     }
 }

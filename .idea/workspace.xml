@@ -30,6 +30,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/Subhankar/Desktop/PersonalProjects/apica_test",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -41,7 +42,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="jdk-17.0.10-corretto-17.0.10-f644763e9732-24582b8d" />
+        <option value="jdk-17.0.9-corretto-17.0.9-3183f394aec4-8f899f12" />
       </set>
     </attachedChunks>
   </component>
@@ -55,6 +56,7 @@
       <updated>1711298998502</updated>
       <workItem from="1711298999617" duration="48000" />
       <workItem from="1711343997558" duration="341000" />
+      <workItem from="1711346490625" duration="33000" />
     </task>
     <servers />
   </component>

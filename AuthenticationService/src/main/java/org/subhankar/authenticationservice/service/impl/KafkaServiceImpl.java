@@ -16,6 +16,5 @@ public class KafkaServiceImpl implements KafkaService {
     @Override
     public void updateTransaction(JournalDTO journalDTO) {
         this.kafkaTemplate.send("auth-topic", journalDTO);
-        log.info("Message sent to Auth Kafka Topic : "+journalDTO.toString());
     }
 }

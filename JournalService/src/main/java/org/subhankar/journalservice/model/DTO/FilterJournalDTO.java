@@ -13,9 +13,10 @@ public class FilterJournalDTO {
     private String createdDate;
     private String startDate;
     private String endDate;
-    private int pageNumber;
-    private int pageSize;
-    private String sortBy;
-    private String sortOrder;
     private String role;
+    private int pageNumber=0;
+    private int pageSize=10;
+    private String sortBy="createdAt";
+    private String sortOrder="DESC";
+
 }

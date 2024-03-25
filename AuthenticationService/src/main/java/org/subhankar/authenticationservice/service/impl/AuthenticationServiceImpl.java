@@ -54,22 +54,29 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 }
             }
         }
-        UserDO user = userIntegration.getUserByEmail(GetUserByEmailDTO.builder().email(loginRequestDTO.getEmail()).build());
-        if(user == null){
-            ResponseDTO result = ResponseDTO.builder()
-                    .status("401")
-                    .message("Unauthorized")
-                    .build();
-            return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
-        }
+
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequestDTO.getEmail(), loginRequestDTO.getPassword()));
+            UserDO user =null;
             ResponseDTO result=null;
             if(authentication.isAuthenticated()){
+                user = userIntegration.getUserByEmail(GetUserByEmailDTO.builder().email(loginRequestDTO.getEmail()).build());
+                String role = user.getRole().stream().map(RoleDO::getName).toList().get(0);
+                try{
+                    JournalDTO journalDTO = JournalDTO.builder()
+                            .message("User logged in successfully")
+                            .createdBy(user.getId())
+                            .createdAt(new Date())
+                            .role(role)
+                            .build();
+                    kafkaService.updateTransaction(journalDTO);
+                }catch(Exception e){
+                    log.error("Exception occurred while logging in Kafka: {}"+ e.getMessage());
+                }
                 Map<String, Object> claims = new HashMap<>();
                 claims.put("name", user.getFullName());
                 claims.put("id", user.getId());
-                claims.put("role", user.getRole().stream().map(RoleDO::getName).toList());
+                claims.put("role",role );
                 String accessToken = jwtProvider.generateToken(claims,user);
                 Cookie cookie = new Cookie("token", accessToken);
                 cookie.setMaxAge(3600);
@@ -78,23 +85,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 cookie.setPath("/");
 
                 response.addCookie(cookie);
+
                 result = ResponseDTO.builder()
                         .status("200")
                         .message("User logged in successfully")
                         .data(accessToken)
                         .build();
 
+
             } else {
                 throw new UsernameNotFoundException("invalid user name or password..!!");
             }
-            RoleDO roleDO = user.getRole().stream().findFirst().get();
-            JournalDTO journalDTO = JournalDTO.builder()
-                    .message("User logged in successfully")
-                    .createdBy(user.getId())
-                    .createdAt(new Date())
-                    .role(roleDO.getName())
-                    .build();
-            kafkaService.updateTransaction(journalDTO);
+
             return new ResponseEntity<>(result, HttpStatus.OK);
         } catch (BadCredentialsException e) {
             // Log the exception or relevant details
@@ -127,20 +129,25 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     .build();
             return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
         }
+        try{
+            String userId = jwtProvider.getUserIdFromJWT(token);
+            String role = jwtProvider.getRoleFromJWT(token);
+            JournalDTO journalDTO = JournalDTO.builder()
+                    .message("User logged out successfully")
+                    .createdBy(userId)
+                    .createdAt(new Date())
+                    .role(role)
+                    .build();
+            kafkaService.updateTransaction(journalDTO);
+        }catch (Exception e){
+            log.error("Exception occurred while logging out in Kafka: {}"+ e.getMessage());
+        }
         response.setHeader(HttpHeaders.SET_COOKIE, "token=; Max-Age=0; Path=/; HttpOnly; SameSite=None; Secure");
         ResponseDTO result = ResponseDTO.builder()
                 .status("200")
                 .message("User logged out successfully")
                 .build();
-        UserDO user = userIntegration.getUserByEmail(GetUserByEmailDTO.builder().email(userEmail).build());
-        RoleDO roleDO = user.getRole().stream().findFirst().get();
-        JournalDTO journalDTO = JournalDTO.builder()
-                .message("User logged out successfully")
-                .createdBy(user.getId())
-                .createdAt(new Date())
-                .role(roleDO.getName())
-                .build();
-        kafkaService.updateTransaction(journalDTO);
+
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
