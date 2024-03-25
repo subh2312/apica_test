@@ -30,7 +30,13 @@ public class KafkaConsumerConfig {
     }
 
     @KafkaListener(topics = "auth-topic", groupId = "group_2")
-    public void consumeAuthTransaction(String topic, String message, String timestamp) {
-        log.info("Consumed message: " + message + " from topic: " + topic + " at: " + timestamp);
+    public void consumeAuthTransaction(JournalDTO journalDTO) {
+        log.info("Consumed message: " + journalDTO.toString());
+        journalRepository.save(JournalDO.builder()
+                .message(journalDTO.getMessage())
+                .createdBy(journalDTO.getCreatedBy())
+                .createdAt(journalDTO.getCreatedAt())
+                .role(journalDTO.getRole())
+                .build());
     }
 }
