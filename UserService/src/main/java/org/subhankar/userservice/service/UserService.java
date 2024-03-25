@@ -1,5 +1,7 @@
 package org.subhankar.userservice.service;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.subhankar.userservice.model.DO.UserDO;
 import org.subhankar.userservice.model.DTO.ResponseDTO;

@@ -28,8 +28,8 @@ public class JwtUtils {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    public List<String> extractRoles(String token) {
-        return (List<String>) extractClaim(token, claims -> claims.get("role", Collection.class));
+    public String extractRoles(String token) {
+        return extractClaim(token, claims -> claims.get("role", String.class));
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {

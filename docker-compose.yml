@@ -12,17 +12,6 @@ services:
 
   kafka:
     image: 'bitnami/kafka:latest'
-    # environment: 
-    #   - KAFKA_BROKER_ID: 1 
-    #   - KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181' 
-    #   - ALLOW_PLAINTEXT_LISTENER: "yes" 
-    #   - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 
-    #     PLAINTEXT: PLAINTEXT
-    #     PLAINTEXT_HOST: PLAINTEXT 
-    #     KAFKA_LISTENERS: PLAINTEXT://:9092
-    #     PLAINTEXT_HOST: //0.0.0.0:29092 
-    #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-    #     PLAINTEXT_HOST: //localhost:29092
     environment:
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
       # - KAFKA_CFG_ADVERTISED_LISTENERS=://:9092
@@ -109,6 +98,9 @@ services:
       - jwt.expirationMs=86400000
       - jwt.secret=902ffc52f4ab670361e543008a5f8e86005edadfbc1df36f5cc375b433448aff
       - spring.application.name=AuthenticationService
+      - spring.kafka.producer.bootstrap-servers=kafka:9092
+      - spring.kafka.producer.key-serializer=org.apache.kafka.common.serialization.StringSerializer
+      - spring.kafka.producer.value-serializer=org.subhankar.authenticationservice.config.JournalDTOSerializer
     depends_on:
       - zookeeper
       - kafka

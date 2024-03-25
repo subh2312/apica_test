@@ -14,7 +14,8 @@ public class RouteValidator {
             "/users/new");
 
     private final List<String> adminApiEndpoints = List.of(
-            "/users/adm/"
+            "/users/adm/",
+            "/journal"
             );
 
 

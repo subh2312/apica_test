@@ -26,6 +26,7 @@ import org.subhankar.authenticationservice.service.AuthenticationService;
 import org.subhankar.authenticationservice.service.KafkaService;
 import org.subhankar.commonDTO.JournalDTO;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,7 +67,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     JournalDTO journalDTO = JournalDTO.builder()
                             .message("User logged in successfully")
                             .createdBy(user.getId())
-                            .createdAt(new Date())
+                            .createdAt(LocalDateTime.now())
                             .role(role)
                             .build();
                     kafkaService.updateTransaction(journalDTO);
@@ -135,7 +136,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             JournalDTO journalDTO = JournalDTO.builder()
                     .message("User logged out successfully")
                     .createdBy(userId)
-                    .createdAt(new Date())
+                    .createdAt(LocalDateTime.now())
                     .role(role)
                     .build();
             kafkaService.updateTransaction(journalDTO);
@@ -154,5 +155,40 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public ResponseEntity<ResponseDTO> register(UserRequestDTO userRequestDTO) {
         return userIntegration.addUser(userRequestDTO);
+    }
+
+    @Override
+    public ResponseEntity<ResponseDTO> deleteUser(String id,HttpServletResponse response, HttpServletRequest request) {
+        String token = null;
+
+        if(request.getCookies() != null){
+            for(Cookie cookie: request.getCookies()){
+                if(cookie.getName().equals("token")){
+                    token = cookie.getValue();
+                }
+            }
+        }
+        String userId = jwtProvider.getUserIdFromJWT(token);
+        String role = jwtProvider.getRoleFromJWT(token);
+        ResponseEntity<ResponseDTO> result = userIntegration.deleteUser(id);
+        if(result.getBody().getMessage().equals("User Deleted Successfully")){
+            try{
+                JournalDTO journalDTO = JournalDTO.builder()
+                        .message("User with "+id +"deleted successfully")
+                        .createdBy(userId)
+                        .createdAt(LocalDateTime.now())
+                        .role(role)
+                        .build();
+                kafkaService.updateTransaction(journalDTO);
+                if(id.equals(userId)){
+                    response.setHeader(HttpHeaders.SET_COOKIE, "token=; Max-Age=0; Path=/; HttpOnly; SameSite=None; Secure");
+                }
+                return result;
+            }catch(Exception e){
+                log.error("Exception occurred while deleting user in Kafka: {}"+ e.getMessage());
+            }
+        }
+        return null;
+
     }
 }

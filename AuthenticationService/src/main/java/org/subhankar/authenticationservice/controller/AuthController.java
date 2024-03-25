@@ -4,10 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.subhankar.authenticationservice.model.DTO.LoginRequestDTO;
 import org.subhankar.authenticationservice.model.DTO.ResponseDTO;
 import org.subhankar.authenticationservice.model.DTO.UserRequestDTO;
@@ -35,5 +32,11 @@ public class AuthController {
     public ResponseEntity<ResponseDTO> register(@RequestBody UserRequestDTO userRequestDTO) {
 
         return authenticationService.register(userRequestDTO);
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<ResponseDTO> deleteUser(@PathVariable String id, HttpServletResponse response, HttpServletRequest request) {
+
+        return authenticationService.deleteUser(id,response, request);
     }
 }

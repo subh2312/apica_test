@@ -1,5 +1,7 @@
 package org.subhankar.userservice.service.impl;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +36,12 @@ public class UserServiceImpl implements UserService {
     private final KafkaService kafkaService;
     @Override
     public ResponseEntity<ResponseDTO> addUser(UserRequestDTO userRequestDTO) {
+        List<UserDO> userDOList = repository.findAll();
+        for(UserDO userDO : userDOList){
+            if(userDO.getEmail().equals(userRequestDTO.getEmail())){
+                throw new BadRequestException("User with Email "+userRequestDTO.getEmail()+" already exists");
+            }
+        }
         List<String> errors = isValidUser(userRequestDTO);
         if(!errors.isEmpty()){
             String errorMessage = String.join(" , ", errors);
@@ -58,7 +66,7 @@ public class UserServiceImpl implements UserService {
                 .message("New User Registered with Email "+userDO.getEmail())
                 .createdBy(userDO.getId())
                 .role(roleDO.getName())
-                .createdAt(new Date())
+                .createdAt(LocalDateTime.now())
                 .build();
         kafkaService.updateTransaction(journalDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
@@ -86,13 +94,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDO getUserByEmail(String email) {
         UserDO userDO = repository.findByEmail(email).orElseThrow(()->new ResourceNotFoundException("User","email",email));
-        JournalDTO journalDTO = JournalDTO.builder()
-                .message("User Fetched with Email "+userDO.getEmail())
-                .createdBy(userDO.getId())
-                .role(userDO.getRole().stream().findFirst().get().getName())
-                .createdAt(new Date())
-                .build();
-        kafkaService.updateTransaction(journalDTO);
         return userDO;
 
 
@@ -113,22 +114,26 @@ public class UserServiceImpl implements UserService {
                 .message("All Users Fetched")
                 .createdBy("Admin")
                 .role("Admin")
-                .createdAt(new Date())
+                .createdAt(LocalDateTime.now())
                 .build();
         kafkaService.updateTransaction(journalDTO);
         return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
     }
 
     @Override
-    public ResponseEntity<ResponseDTO> deleteUserByEmail(String email) {
+    public ResponseEntity<ResponseDTO> deleteUserByEmail(String email){
+
         UserDO userDO = repository.findByEmail(email).orElseThrow(()->new ResourceNotFoundException("User","email",email));
+        String userId = userDO.getId();
+        String role = userDO.getRole().stream().findFirst().get().getName();
         repository.delete(userDO);
+
         ResponseDTO responseDTO = ResponseDTO.builder().message("User Deleted Successfully").status("200").data(null).build();
         JournalDTO journalDTO = JournalDTO.builder()
                 .message("User Deleted with Email "+email)
-                .createdBy(userDO.getId())
-                .role(userDO.getRole().stream().findFirst().get().getName())
-                .createdAt(new Date())
+                .createdBy(userId)
+                .role(role)
+                .createdAt(LocalDateTime.now())
                 .build();
 
         kafkaService.updateTransaction(journalDTO);
@@ -137,6 +142,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseEntity<ResponseDTO> updateUserByEmail(String email, UserRequestDTO userDTO) {
+        List<UserDO> userDOList = repository.findAll().stream().filter(u->!u.getEmail().equals(email)).toList();
+        for(UserDO userDO : userDOList){
+            if(userDO.getEmail().equals(userDTO.getEmail())){
+                throw new BadRequestException("User with Email "+userDTO.getEmail()+" already exists");
+            }
+        }
         UserDO existingUser = repository.findByEmail(email).orElseThrow(()->new ResourceNotFoundException("User","email",email));
         updatePropertyIfNotEmpty(userDTO.getFullName(), existingUser::setFullName);
         updatePropertyIfNotEmpty(userDTO.getEmail(), existingUser::setEmail);
@@ -154,7 +165,7 @@ public class UserServiceImpl implements UserService {
                 .message("User Updated with Email "+email)
                 .createdBy(updatedUser.getEmail())
                 .role(updatedUser.getRole().toString())
-                .createdAt(new Date())
+                .createdAt(LocalDateTime.now())
                 .build();
         kafkaService.updateTransaction(journalDTO);
         return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
@@ -162,6 +173,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseEntity<ResponseDTO> updateUser(String id, UserRequestDTO userDTO) {
+        List<UserDO> userDOList = repository.findAll().stream().filter(u->!u.getId().equals(id)).toList();
+        for(UserDO userDO : userDOList){
+            if(userDO.getEmail().equals(userDTO.getEmail())){
+                throw new BadRequestException("User with Email "+userDTO.getEmail()+" already exists");
+            }
+        }
         UserDO existingUser = repository.findById(id).orElseThrow(()->new ResourceNotFoundException("User","id",id));
         updatePropertyIfNotEmpty(userDTO.getFullName(), existingUser::setFullName);
         updatePropertyIfNotEmpty(userDTO.getEmail(), existingUser::setEmail);
@@ -180,7 +197,7 @@ public class UserServiceImpl implements UserService {
                 .message("User Updated with id "+id)
                 .createdBy(updatedUser.getEmail())
                 .role(updatedUser.getRole().toString())
-                .createdAt(new Date())
+                .createdAt(LocalDateTime.now())
                 .build();
         kafkaService.updateTransaction(journalDTO);
         return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
@@ -189,14 +206,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public ResponseEntity<ResponseDTO> deleteUser(String id) {
         UserDO userDO = repository.findById(id).orElseThrow(()->new ResourceNotFoundException("User","id",id));
+        String userId = userDO.getId();
+        String role = userDO.getRole().stream().findFirst().get().getName();
         repository.delete(userDO);
-        JournalDTO journalDTO = JournalDTO.builder()
-                .message("User Deleted with id "+id)
-                .createdBy(userDO.getId())
-                .role(userDO.getRole().stream().findFirst().get().getName())
-                .createdAt(new Date())
-                .build();
-        kafkaService.updateTransaction(journalDTO);
         ResponseDTO responseDTO = ResponseDTO.builder().message("User Deleted Successfully").status("200").data(null).build();
         return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
     }
@@ -215,7 +227,7 @@ public class UserServiceImpl implements UserService {
                 .message("User Fetched Using id "+id)
                 .createdBy(userDO.getId())
                 .role(userDO.getRole().stream().findFirst().get().getName())
-                .createdAt(new Date())
+                .createdAt(LocalDateTime.now())
                 .build();
 
         kafkaService.updateTransaction(journalDTO);

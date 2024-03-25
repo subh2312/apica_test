@@ -1,6 +1,9 @@
 package org.subhankar.userservice.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.subhankar.userservice.model.DO.UserDO;
@@ -25,7 +28,7 @@ public class UserController {
         return userService.getUserByEmail(getUserByEmailDTO.getEmail());
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<ResponseDTO> getAllUsers(){
         return userService.getAllUsers();
     }

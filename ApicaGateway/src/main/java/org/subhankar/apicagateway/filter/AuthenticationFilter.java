@@ -57,7 +57,7 @@ public class AuthenticationFilter implements GatewayFilter {
     }
 
     private boolean hasRole(String token, String role) {
-        List<String> roles = jwtUtils.extractRoles(token);
+        List<String> roles = List.of(jwtUtils.extractRoles(token));
         boolean flag = false;
         for (String r : roles) {
             if (r.equals(role)) {

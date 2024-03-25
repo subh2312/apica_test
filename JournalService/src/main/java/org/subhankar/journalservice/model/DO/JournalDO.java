@@ -3,6 +3,7 @@ package org.subhankar.journalservice.model.DO;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Getter
@@ -19,6 +20,6 @@ public class JournalDO {
     private String message;
     private String createdBy;
     private String role;
-    private Date createdAt;
+    private LocalDateTime createdAt;
 
 }

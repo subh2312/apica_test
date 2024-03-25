@@ -13,4 +13,6 @@ public interface AuthenticationService {
     ResponseEntity<ResponseDTO> logout(HttpServletResponse response, HttpServletRequest request);
 
     ResponseEntity<ResponseDTO> register(UserRequestDTO loginRequestDTO);
+
+    ResponseEntity<ResponseDTO> deleteUser(String id,HttpServletResponse response, HttpServletRequest request);
 }
